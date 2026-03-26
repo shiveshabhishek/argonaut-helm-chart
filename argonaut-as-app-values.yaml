@@ -1,0 +1,25 @@
+GIT:
+  enabled: false
+  secretName: ""
+argocd:
+  usecreds: false
+  secretName: ""
+kubernetes:
+  enabled: false
+  secretName: ""
+slack:
+  enabled: false
+  secretName: ""
+openAI:
+  enabled: false
+  secretName: ""
+elasticsearch:
+  enabled: false
+  secretName: ""
+spincli:
+  enabled: false
+  secretName: ""
+serviceAccount:
+  name: argocd-application-controller
+ingress:
+  enabled: false

@@ -1,0 +1,33 @@
+
+LOG_LEVEL: INFO
+# OPTIONAL no need to setup git unless you want to use it
+GIT:
+  enabled: false
+# set to true of you want Argonaut to run command automatically
+AUTO_RUN: false
+
+FILE_STORAGE:
+  enabled: true
+  FS_INDEX: /argonaut/file_storage
+openAI:
+#create a secret kubectl -n <NS> create secret generic open-api-key --from-literal  --OPENAI_API_KEY=xoxb-123
+  secretName: open-api-key
+  MAX_USER_INPUT_TOKENS: "6000"
+  SAVE_TOKEN_USE_SUMMARY: "true"
+  max_response_tokens: "500"
+  model: gpt-4o
+  temperature: "0.0"
+  top_p: "0.5"
+# OPtional if you use argocd login argocdUrl --core, then install in argocd namespace
+argocd:
+  usecreds: false
+#OPTIONAL add only if you use
+kubernetes:
+  enabled: false
+
+#if you use this you must install in the same namespace as argocd
+serviceAccount:
+  create: false
+  name: "argocd-application-controller"
+ingress:
+  enabled: false

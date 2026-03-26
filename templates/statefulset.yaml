@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "argonaut.fullname" . }}
+spec:
+  serviceName: argonaut
+  replicas: {{.Values.replicaCount}}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "argonaut.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "argonaut.fullname" . }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+#      serviceAccountName: {{- if .Values.serviceAccount.create }}{{ include "argonaut.fullname" . }}{{- else }}{{ .Values.serviceAccount.name }}{{- end }}
+      serviceAccountName: {{ if .Values.serviceAccount.create }}{{ include "argonaut.fullname" . }}{{ else }}{{ .Values.serviceAccount.name }}{{ end }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image:  "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sleep"]
+          args: ["30d"]
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+{{- if and .Values.GIT.enabled .Values.GIT.secretName }}
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.GIT.secretName }}
+                  key: GITHUB_TOKEN
+{{- end }}
+{{- if .Values.elasticsearch.enabled }}
+            - name: ES_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.elasticsearch.secretName }}
+                  key: password
+            - name: ES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.elasticsearch.secretName }}
+                  key: username
+{{- end }}
+{{- if and .Values.slack.enabled .Values.slack.secretName }}
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.slack.secretName }}
+                  key: SLACK_BOT_TOKEN
+
+            - name: SLACK_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.slack.secretName }}
+                  key: SLACK_SIGNING_SECRET
+{{- end }}
+{{- if and .Values.openAI.enabled .Values.openAI.secretName }}
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.openAI.secretName }}
+                  key: OPENAI_API_KEY
+{{- end }}
+            - name: SYSTEM_TEXT_PATH
+              value: "/app/system_text.txt"
+{{- with .Values.extraEnvVars }}
+{{- toYaml . | nindent 12 }}
+{{- end }}
+          envFrom:
+{{- if and .Values.argocd.usecreds .Values.argocd.secretName }}
+            - secretRef:
+                name: {{ .Values.argocd.secretName }}
+{{- end }}
+            - configMapRef:
+                name: {{ include "argonaut.fullname" . }}
+          volumeMounts:
+            - name: system-text-config
+              mountPath: "/app/system_text.txt"
+              subPath: "system_text.txt"
+{{- if .Values.elasticsearch.enabled }}
+            - name: es-ca-crt
+              mountPath: "/app/ca.crt"
+              subPath: "ca.crt"
+{{- end }}
+{{- if .Values.kubernetes.enabled }}
+            - name: kubeconfigs
+              mountPath: "/root/.kube/"
+{{- end }}
+
+{{- if .Values.spincli.enabled }}
+            - name: spincli
+              mountPath: "/root/.spin/config"
+              subPath: config
+{{- end }}
+
+            - name: argonaut-data
+              mountPath: "/argonaut"
+{{- with .Values.extraVolumeMounts }}
+{{- toYaml . | nindent 12 }}
+{{- end }}
+      volumes:
+
+{{- if .Values.argocd.usecreds }}
+        - name: argocd-auth
+          configMap:
+            name: argocd-auth
+{{- end }}
+        - name: system-text-config
+          configMap:
+            name: system-text-config
+{{- if and .Values.elasticsearch.enabled .Values.elasticsearch.secretName }}
+        - name: es-ca-crt
+          secret:
+            secretName: {{ .Values.elasticsearch.secretName }}
+{{- end }}
+{{- if and .Values.kubernetes.enabled .Values.kubernetes.secretName }}
+        - name: kubeconfigs
+          secret:
+            secretName: {{ .Values.kubernetes.secretName }}
+{{- end }}
+{{- if and .Values.spincli.enabled .Values.spincli.secretName }}
+        - name: spincli
+          secret:
+            secretName: {{ .Values.spincli.secretName }}
+{{- end }}
+{{- with .Values.extraVolumes }}
+{{- tpl (toYaml .) $ | nindent 8 }}
+{{- end }}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: argonaut-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 6Gi

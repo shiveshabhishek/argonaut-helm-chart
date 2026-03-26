@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argonaut
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/opsmx/argonaut-helm-chart.git
+    targetRevision: main
+    path: .
+    helm:
+      parameters:
+        - name: GIT.enabled
+          value: "false"
+        - name: GIT.secretName
+          value: ""
+        - name: argocd.usecreds
+          value: "false"
+        - name: argocd.secretName
+          value: ""
+        - name: kubernetes.enabled
+          value: "false"
+        - name: kubernetes.secretName
+          value: ""
+        - name: slack.enabled
+          value: "false"
+        - name: slack.secretName
+          value: ""
+        - name: openAI.enabled
+          value: "false"
+        - name: openAI.secretName
+          value: ""
+        - name: elasticsearch.enabled
+          value: "false"
+        - name: elasticsearch.secretName
+          value: ""
+        - name: spincli.enabled
+          value: "false"
+        - name: spincli.secretName
+          value: ""
+        - name: serviceAccount.name
+          value: argocd-application-controller
+        - name: ingress.enabled
+          value: "false"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
