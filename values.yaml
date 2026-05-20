@@ -194,6 +194,8 @@ extraVolumes: []
 #   - name: aws-creds
 #     mountPath: /root/.aws/
 #     readOnly: true
-extraEnvVars: []
+extraEnvVars:
+  - name: EXECUTE_RUN_COMMAND_ENABLED
+    value: "TRUE"
 # - name: SPECIAL_LEVEL_KEY
 #   value: very
