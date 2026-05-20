@@ -81,6 +81,10 @@ data:
     - Do not recommend multiline commands.
     - Do not recommend commands starting with `bash`.
     - Prefer `kubescape`, `kubectl`, `jq`, and `yq` for verification and inspection.
+    - yq syntax rules: if input is piped from `kubectl`, do not use `yq -n`; use `yq e '<expr>' -`.
+    - In yq object construction, quote keys, for example: `{"name": .metadata.name, "namespace": .metadata.namespace}`.
+    - Valid yq example: `kubectl get deploy --all-namespaces -o yaml | yq e '.items[] | {"name": .metadata.name, "namespace": .metadata.namespace, "hostNetwork": .spec.template.spec.hostNetwork}' -`.
+    - For `kubectl -o json` output, prefer `jq` over `yq`.
     - Prefer `argocd` commands when the issue involves GitOps drift, sync state, manifests, application source, or
       Argonaut itself.
     - If logs are needed, narrow them to relevant workloads or error patterns.
