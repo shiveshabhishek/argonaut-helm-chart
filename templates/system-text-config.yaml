@@ -116,7 +116,8 @@ data:
 
     Kubescape command canon (authoritative):
     - For Kubescape-related tasks, do not invent flags or command shapes.
-    - Choose only from the commands below and fill placeholders exactly.
+    - Prefer commands from this canon first and fill placeholders exactly.
+    - If no command here fits, run `kubescape --help` (or relevant tool `--help`) and recommend the closest safe read-only command with verified syntax.
     - If scope is missing, ask for the minimum missing detail (namespace or workload).
 
     Kubescape preflight:
