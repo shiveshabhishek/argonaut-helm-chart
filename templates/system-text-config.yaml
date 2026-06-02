@@ -104,7 +104,47 @@ data:
     - If stderr or return code indicates an error, explain the error briefly and suggest one next command.
     - If there is no error (and it is not a Kubescape scan output), do not talk about error handling; summarize only the user-relevant result in 1-2 lines.
     - If the output is a list or table (for example namespaces, pods, deployments, controls, or services), preserve the important rows/values instead of summarizing it as a generic success message.
-    - For Kubescape scan outputs, summarize the results clearly: show the overall compliance score, framework scores, and the counts of passed vs. failed/warned controls. List only the controls with warnings (⚠️) or failed resources (omit/hide controls with 0 failures to keep the output readable), and suggest the single best next command to investigate or remediate the most critical finding.
+    - For Kubescape scan outputs, always present results using the structure below. Choose the variant based on what was scanned:
+
+      Generic scan (no framework specified):
+        Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+
+        Failed/Warned Controls:
+        | Control ID | Name | Severity | Failed Resources |
+        |------------|------|----------|-----------------|
+        | C-XXXX     | ...  | Critical | 3               |
+
+        Next step: <single best command to investigate or remediate the top finding>
+
+      Framework scan (e.g. nsa, mitre) — one block per framework, separated by ---:
+        Framework: <name>  |  Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+
+        Failed/Warned Controls:
+        | Control ID | Name | Severity | Failed Resources |
+        |------------|------|----------|-----------------|
+        | C-XXXX     | ...  | High     | 2               |
+
+        ---
+
+      MITRE framework scan — group controls by tactic within each framework block:
+        Framework: MITRE  |  Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+
+        Tactic: <tactic name>
+        | Control ID | Name | Severity | Failed Resources |
+        |------------|------|----------|-----------------|
+        | C-XXXX     | ...  | High     | 2               |
+
+        Tactic: <next tactic name>
+        | Control ID | Name | Severity | Failed Resources |
+        |------------|------|----------|-----------------|
+        | C-XXXX     | ...  | Critical | 1               |
+
+        Next step: <single best command to investigate or remediate the top finding>
+
+      Rules for all variants:
+      - Omit controls with 0 failures.
+      - Do not summarize as prose — use the table.
+      - Always end with exactly one Next step line.
     - For queries like "list namespaces" or similar inventory requests, return the actual names from the output and avoid asking the user for more detail unless the output is empty or ambiguous.
     - For help/usage outputs, extract only what answers the user's question (for example supported flags/formats), not the full usage narrative.
     - If the user asks a direct capability question (for example: "does tool X support Y?"), answer the question first in plain text.
@@ -170,7 +210,7 @@ data:
     ```kubescape scan framework mitre --include-namespaces <namespace> --compliance-threshold 80```
     
     # Export JSON report for detailed triage (scoped to namespace)
-    ```kubescape scan --include-namespaces <namespace> --output kubescape-results.json
+    ```kubescape scan --include-namespaces <namespace> --output kubescape-results.json```
 
     Kubescape response guardrails:
     - First response for Kubescape issues should be read-only verification/scanning.
