@@ -104,44 +104,49 @@ data:
     - If stderr or return code indicates an error, explain the error briefly and suggest one next command.
     - If there is no error (and it is not a Kubescape scan output), do not talk about error handling; summarize only the user-relevant result in 1-2 lines.
     - If the output is a list or table (for example namespaces, pods, deployments, controls, or services), preserve the important rows/values instead of summarizing it as a generic success message.
-    - For Kubescape scan outputs, always present results using the structure below. Choose the variant based on what was scanned:
+    - For Kubescape scan outputs, always present results using the structure below. Choose the variant based on what was scanned.
+      The placeholders below (e.g. C-0016, NSA, Privilege Escalation) are illustrative — always substitute the actual values from the scan output.
 
       Generic scan (no framework specified):
-        Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+        Compliance Score: 62%  |  Passed: 14  |  Failed: 6  |  Warned: 3
 
         Failed/Warned Controls:
-        | Control ID | Name | Severity | Failed Resources |
-        |------------|------|----------|-----------------|
-        | C-XXXX     | ...  | Critical | 3               |
+        | Control ID | Name                        | Severity | Failed Resources |
+        |------------|-----------------------------|----------|-----------------|
+        | C-0016     | Allow privilege escalation  | Critical | 3               |
+        | C-0044     | Container hostPort          | Medium   | 1               |
 
         Next step: <single best command to investigate or remediate the top finding>
 
-      Framework scan (e.g. nsa, mitre) — one block per framework, separated by ---:
-        Framework: <name>  |  Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+      Framework scan (e.g. nsa, mitre) — REQUIRED: first line must be "Framework: <actual framework name>":
+        Framework: NSA  |  Compliance Score: 62%  |  Passed: 14  |  Failed: 6  |  Warned: 3
 
         Failed/Warned Controls:
-        | Control ID | Name | Severity | Failed Resources |
-        |------------|------|----------|-----------------|
-        | C-XXXX     | ...  | High     | 2               |
+        | Control ID | Name                        | Severity | Failed Resources |
+        |------------|-----------------------------|----------|-----------------|
+        | C-0016     | Allow privilege escalation  | Critical | 3               |
+        | C-0044     | Container hostPort          | Medium   | 1               |
 
         ---
 
-      MITRE framework scan — group controls by tactic within each framework block:
-        Framework: MITRE  |  Compliance Score: X%  |  Passed: N  |  Failed: M  |  Warned: P
+      MITRE framework scan — REQUIRED: first line must be "Framework: MITRE"; group controls by tactic:
+        Framework: MITRE  |  Compliance Score: 55%  |  Passed: 10  |  Failed: 8  |  Warned: 2
 
-        Tactic: <tactic name>
-        | Control ID | Name | Severity | Failed Resources |
-        |------------|------|----------|-----------------|
-        | C-XXXX     | ...  | High     | 2               |
+        Tactic: Privilege Escalation
+        | Control ID | Name                        | Severity | Failed Resources |
+        |------------|-----------------------------|----------|-----------------|
+        | C-0016     | Allow privilege escalation  | High     | 2               |
 
-        Tactic: <next tactic name>
-        | Control ID | Name | Severity | Failed Resources |
-        |------------|------|----------|-----------------|
-        | C-XXXX     | ...  | Critical | 1               |
+        Tactic: Lateral Movement
+        | Control ID | Name                        | Severity | Failed Resources |
+        |------------|-----------------------------|----------|-----------------|
+        | C-0056     | Unnecessary capabilities    | Critical | 1               |
 
         Next step: <single best command to investigate or remediate the top finding>
 
       Rules for all variants:
+      - The Control ID column must contain the real ID from the scan output (e.g. C-0016), never a placeholder like C-XXXX.
+      - For framework scans, "Framework: <name>" is mandatory and must be the first line of the output.
       - Omit controls with 0 failures.
       - Do not summarize as prose — use the table.
       - Always end with exactly one Next step line.
