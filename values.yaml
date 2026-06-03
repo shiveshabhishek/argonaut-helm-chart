@@ -36,7 +36,7 @@ openAI:
   secretName: ""
   MAX_USER_INPUT_TOKENS: "6000"
   SAVE_TOKEN_USE_SUMMARY: "true"
-  max_response_tokens: "500"
+  max_response_tokens: "900"
   model: gpt-4o
   temperature: "0.0"
   top_p: "0.5"
